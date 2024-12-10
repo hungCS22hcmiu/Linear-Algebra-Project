@@ -40,7 +40,11 @@ def create_matrix_inputs():
     try:
         rows = int(row_entry.get())
         cols = int(col_entry.get())
-
+        # Ensure matrix dimensions do not exceed 10x10
+        if rows > 10 or cols > 10:
+            messagebox.showerror("Error", "Maximum matrix size is 10x10!")
+            return
+        ## make sure the matrix is suqare
         if rows != cols:
             messagebox.showerror("Error", "Matrix must be square!")
             return
@@ -64,7 +68,7 @@ def create_matrix_inputs():
     except ValueError:
         messagebox.showerror("Error", "Please enter valid numbers for rows and columns.")
 
-
+###############################################
 def navigate_to_cell(row, col):
     # Ensure the target cell is within bounds
     if 0 <= row < len(entries) and 0 <= col < len(entries[0]):
