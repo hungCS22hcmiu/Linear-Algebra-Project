@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import messagebox
 import numpy as np
 
-
+# code:
 def calculate_determinant():
     try:
         # Read matrix dimensions
