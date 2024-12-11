@@ -1,3 +1,4 @@
-**This is my simple project for Linear Algebra Course.**
-It is used to calculate the determinant of a given input square matrix.
-<img width="904" alt="Screenshot 2024-12-10 at 14 51 41" src="https://github.com/user-attachments/assets/ffe12e7d-8c62-4f5e-b10b-22ad043da54b">
+# Determinant Calculator
+**My simple project for Linear Algebra Course:** A Python application to calculate the determinant of a square matrix.
+<img width="896" alt="Screenshot 2024-12-10 at 18 09 42" src="https://github.com/user-attachments/assets/5df40eec-6f2e-4a39-9473-7340b0e9db55">
+
