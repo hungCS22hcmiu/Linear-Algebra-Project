@@ -97,6 +97,16 @@ welcome_label = tk.Label(
 )
 welcome_label.pack(pady=10)
 
+# Subtitle
+subtitle_label = tk.Label(
+    top_frame,
+    text="Using Linear Algebra Determinant Function in Numpy",
+    bg="#1abc9c",
+    fg="black",
+    font=("Arial", 20, "italic"),
+)
+subtitle_label.pack(pady=(0, 10))
+
 # Input frame for matrix size
 size_frame = tk.Frame(root, bg="#2c3e50")
 size_frame.pack(pady=20)
