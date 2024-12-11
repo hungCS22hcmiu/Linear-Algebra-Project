@@ -1,8 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
-import numpy as np
 
-# code:
 def calculate_determinant():
     try:
         # Read matrix dimensions
@@ -22,14 +20,36 @@ def calculate_determinant():
                 row.append(float(value))
             matrix.append(row)
 
-        # Convert to numpy array and calculate determinant
-        np_matrix = np.array(matrix)
-        determinant = round(np.linalg.det(np_matrix), 2)
+        # Calculate determinant using custom recursive method
+        determinant = round(determinant_recursive(matrix), 2)
 
         # Display the result
         result_label.config(text=f"Determinant = {determinant}")
     except Exception as e:
         messagebox.showerror("Error", f"Invalid input: {e}")
+
+
+def determinant_recursive(matrix):
+    """Calculate determinant recursively using Laplace expansion."""
+    size = len(matrix)
+
+    # Base case: 1x1 matrix
+    if size == 1:
+        return matrix[0][0]
+
+    # Base case: 2x2 matrix
+    if size == 2:
+        return matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0]
+
+    # Recursive case
+    det = 0
+    for col in range(size):
+        # Minor matrix
+        minor = [row[:col] + row[col+1:] for row in matrix[1:]]
+        # Laplace expansion
+        det += ((-1) ** col) * matrix[0][col] * determinant_recursive(minor)
+
+    return det
 
 
 def create_matrix_inputs():
@@ -40,11 +60,12 @@ def create_matrix_inputs():
     try:
         rows = int(row_entry.get())
         cols = int(col_entry.get())
+
         # Ensure matrix dimensions do not exceed 10x10
         if rows > 10 or cols > 10:
             messagebox.showerror("Error", "Maximum matrix size is 10x10!")
             return
-        ## make sure the matrix is square
+        # Make sure the matrix is square
         if rows != cols:
             messagebox.showerror("Error", "Matrix must be square!")
             return
@@ -68,7 +89,7 @@ def create_matrix_inputs():
     except ValueError:
         messagebox.showerror("Error", "Please enter valid numbers for rows and columns.")
 
-###############################################
+
 def navigate_to_cell(row, col):
     # Ensure the target cell is within bounds
     if 0 <= row < len(entries) and 0 <= col < len(entries[0]):
@@ -96,6 +117,16 @@ welcome_label = tk.Label(
     font=("Arial", 24, "bold"),
 )
 welcome_label.pack(pady=10)
+
+# Subtitle
+subtitle_label = tk.Label(
+    top_frame,
+    text="Applying Laplace Expansion",
+    bg="#1abc9c",
+    fg="black",
+    font=("Arial", 20, "italic"),
+)
+subtitle_label.pack(pady=(0, 10))
 
 # Input frame for matrix size
 size_frame = tk.Frame(root, bg="#2c3e50")
