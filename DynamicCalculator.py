@@ -1,6 +1,14 @@
 import tkinter as tk
 from tkinter import messagebox
-import numpy as np
+import sympy as sp
+
+
+# Function to parse input as float or fraction
+def parse_input(value):
+    try:
+        return sp.Rational(value)  # Use sympy's Rational for precise fraction handling
+    except ValueError:
+        raise ValueError(f"Invalid input: {value}")
 
 
 # Function to clear the previous result display
@@ -19,115 +27,47 @@ def calculate_determinant():
             messagebox.showerror("Error", "Determinant is only defined for square matrices!")
             return
 
-        # Build the matrix from user input
         matrix = []
         for i in range(rows):
             row = []
             for j in range(cols):
                 value = entries[i][j].get()
-                row.append(float(value))
+                row.append(parse_input(value))
             matrix.append(row)
 
-        # Convert to numpy array and calculate determinant
-        np_matrix = np.array(matrix)
-        determinant = round(np.linalg.det(np_matrix), 2)
+        sympy_matrix = sp.Matrix(matrix)
+        determinant = sympy_matrix.det()
 
-        # Clear previous result and display determinant
         clear_result_frame()
-        result_label = tk.Label(result_frame, text=f"Determinant = {determinant}", font=("Arial", 16, "bold"))
+        result_text = f"Determinant = {determinant}" if determinant % 1 else f"Determinant = {int(determinant)}"
+        result_label = tk.Label(result_frame, text=result_text, font=("Arial", 16, "bold"))
         result_label.pack()
     except Exception as e:
         messagebox.showerror("Error", f"Invalid input: {e}")
 
 
-# Function to check matrix properties
-def check_matrix_properties():
-    try:
-        rows = int(row_entry.get())
-        cols = int(col_entry.get())
-
-        # Build the matrix from user input
-        matrix = []
-        for i in range(rows):
-            row = []
-            for j in range(cols):
-                value = entries[i][j].get()
-                row.append(float(value))
-            matrix.append(row)
-
-        # Convert to numpy array
-        np_matrix = np.array(matrix)
-
-        # Calculate rank
-        rank = np.linalg.matrix_rank(np_matrix)
-
-        # Determine properties
-        if rank == cols and rank == rows:
-            properties = "The matrix is both one-to-one and onto."
-        elif rank == cols:
-            properties = "The matrix is one-to-one but not onto."
-        elif rank == rows:
-            properties = "The matrix is onto but not one-to-one."
-        else:
-            properties = "The matrix is neither one-to-one nor onto."
-
-        # Clear previous result and display properties
-        clear_result_frame()
-        result_label = tk.Label(result_frame, text=f"Matrix Properties:\n{properties}", font=("Arial", 16, "bold"))
-        result_label.pack()
-    except Exception as e:
-        messagebox.showerror("Error", f"Invalid input: {e}")
-
-
-# Function to calculate RREF using NumPy
+# Function to calculate RREF
 def calculate_rref():
     try:
         rows = int(row_entry.get())
         cols = int(col_entry.get())
 
-        # Build the matrix from user input
         matrix = []
         for i in range(rows):
             row = []
             for j in range(cols):
                 value = entries[i][j].get()
-                row.append(float(value))
+                row.append(parse_input(value))
             matrix.append(row)
 
-        # Convert to numpy array
-        np_matrix = np.array(matrix, dtype=float)
+        sympy_matrix = sp.Matrix(matrix)
+        rref_matrix, _ = sympy_matrix.rref()
 
-        # Perform Gaussian elimination to find RREF
-        rref_matrix = np_matrix.copy()
-        pivot_row = 0
-
-        for pivot_col in range(cols):
-            if pivot_row >= rows:
-                break
-
-            # Find the pivot row
-            max_row = pivot_row + np.argmax(abs(rref_matrix[pivot_row:, pivot_col]))
-            if abs(rref_matrix[max_row, pivot_col]) < 1e-10:
-                continue
-
-            # Swap rows
-            rref_matrix[[pivot_row, max_row]] = rref_matrix[[max_row, pivot_row]]
-
-            # Normalize pivot row
-            rref_matrix[pivot_row] /= rref_matrix[pivot_row, pivot_col]
-
-            # Eliminate other rows
-            for i in range(rows):
-                if i != pivot_row:
-                    rref_matrix[i] -= rref_matrix[i, pivot_col] * rref_matrix[pivot_row]
-
-            pivot_row += 1
-
-        # Clear previous result and display RREF
         clear_result_frame()
         tk.Label(result_frame, text="RREF:", font=("Arial", 16, "bold")).pack()
-        for i in range(rows):
-            row_label = tk.Label(result_frame, text="   ".join(map(lambda x: f"{x:.2f}", rref_matrix[i])), font=("Arial", 16))
+        for i in range(rref_matrix.rows):
+            row_text = "   ".join(map(str, rref_matrix.row(i)))
+            row_label = tk.Label(result_frame, text=row_text, font=("Arial", 16))
             row_label.pack()
     except Exception as e:
         messagebox.showerror("Error", f"Invalid input: {e}")
@@ -143,26 +83,24 @@ def calculate_inverse():
             messagebox.showerror("Error", "Inverse is only defined for square matrices!")
             return
 
-        # Build the matrix from user input
         matrix = []
         for i in range(rows):
             row = []
             for j in range(cols):
                 value = entries[i][j].get()
-                row.append(float(value))
+                row.append(parse_input(value))
             matrix.append(row)
 
-        # Convert to numpy array and calculate inverse
-        np_matrix = np.array(matrix)
-        inverse_matrix = np.linalg.inv(np_matrix)
+        sympy_matrix = sp.Matrix(matrix)
+        inverse_matrix = sympy_matrix.inv()
 
-        # Clear previous result and display inverse
         clear_result_frame()
         tk.Label(result_frame, text="Inverse Matrix:", font=("Arial", 16, "bold")).pack()
-        for i in range(rows):
-            row_label = tk.Label(result_frame, text="   ".join(map(lambda x: f"{x:.2f}", inverse_matrix[i])), font=("Arial", 16))
+        for i in range(inverse_matrix.rows):
+            row_text = "   ".join(map(str, inverse_matrix.row(i)))
+            row_label = tk.Label(result_frame, text=row_text, font=("Arial", 16))
             row_label.pack()
-    except np.linalg.LinAlgError:
+    except sp.MatrixError:
         messagebox.showerror("Error", "Matrix is singular and not invertible!")
     except Exception as e:
         messagebox.showerror("Error", f"Invalid input: {e}")
@@ -174,24 +112,22 @@ def calculate_transpose():
         rows = int(row_entry.get())
         cols = int(col_entry.get())
 
-        # Build the matrix from user input
         matrix = []
         for i in range(rows):
             row = []
             for j in range(cols):
                 value = entries[i][j].get()
-                row.append(float(value))
+                row.append(parse_input(value))
             matrix.append(row)
 
-        # Convert to numpy array and compute transpose
-        np_matrix = np.array(matrix)
-        transpose_matrix = np_matrix.T
+        sympy_matrix = sp.Matrix(matrix)
+        transpose_matrix = sympy_matrix.T
 
-        # Clear previous result and display transpose
         clear_result_frame()
         tk.Label(result_frame, text="Transpose Matrix:", font=("Arial", 16, "bold")).pack()
-        for i in range(transpose_matrix.shape[0]):
-            row_label = tk.Label(result_frame, text="   ".join(map(lambda x: f"{x:.2f}", transpose_matrix[i])), font=("Arial", 16))
+        for i in range(transpose_matrix.rows):
+            row_text = "   ".join(map(str, transpose_matrix.row(i)))
+            row_label = tk.Label(result_frame, text=row_text, font=("Arial", 16))
             row_label.pack()
     except Exception as e:
         messagebox.showerror("Error", f"Invalid input: {e}")
@@ -225,24 +161,22 @@ def create_matrix_inputs():
 
 # Main window
 root = tk.Tk()
-root.title("Matrix Operations")
-root.geometry("900x700")  # Expanded window size
+root.title("Matrix Operations with Sympy")
+root.geometry("900x700")
 root.configure(bg="#2c3e50")
 
-# Top frame for title
 top_frame = tk.Frame(root, bg="#1abc9c", height=80)
 top_frame.pack(fill="x")
 
 welcome_label = tk.Label(
     top_frame,
-    text="Welcome to Matrix Calculator!",
+    text="Welcome to Sympy Matrix Calculator!",
     bg="#1abc9c",
     fg="black",
     font=("Arial", 24, "bold"),
 )
 welcome_label.pack(pady=10)
 
-# Input frame for matrix size
 size_frame = tk.Frame(root, bg="#2c3e50")
 size_frame.pack(pady=20)
 
@@ -266,23 +200,18 @@ generate_button = tk.Button(
 )
 generate_button.grid(row=0, column=4, padx=20)
 
-# Frame for matrix input
 matrix_frame = tk.Frame(root, bg="#34495e")
 matrix_frame.pack(pady=20)
 
-# Buttons for operations (horizontal layout)
 button_frame = tk.Frame(root, bg="#2c3e50")
 button_frame.pack(pady=20)
 
 tk.Button(button_frame, text="Determinant", command=calculate_determinant, font=("Arial", 16), width=15).pack(side="left", padx=10)
-tk.Button(button_frame, text="Properties", command=check_matrix_properties, font=("Arial", 16), width=15).pack(side="left", padx=10)
 tk.Button(button_frame, text="RREF", command=calculate_rref, font=("Arial", 16), width=15).pack(side="left", padx=10)
 tk.Button(button_frame, text="Inverse", command=calculate_inverse, font=("Arial", 16), width=15).pack(side="left", padx=10)
 tk.Button(button_frame, text="Transpose", command=calculate_transpose, font=("Arial", 16), width=15).pack(side="left", padx=10)
 
-# Frame for results
 result_frame = tk.Frame(root, bg="#34495e")
 result_frame.pack(pady=20)
 
-# Run the application
 root.mainloop()
