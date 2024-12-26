@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
+from fractions import Fraction
 
 def calculate_determinant():
     try:
@@ -17,13 +18,13 @@ def calculate_determinant():
             row = []
             for j in range(cols):
                 value = entries[i][j].get()
-                row.append(float(value))
+                row.append(Fraction(value))  # Parse input as a fraction
             matrix.append(row)
 
         # Calculate determinant using custom recursive method
-        determinant = round(determinant_recursive(matrix), 2)
+        determinant = determinant_recursive(matrix)
 
-        # Display the result
+        # Display the result as an exact fraction
         result_label.config(text=f"Determinant = {determinant}")
     except Exception as e:
         messagebox.showerror("Error", f"Invalid input: {e}")
@@ -42,7 +43,7 @@ def determinant_recursive(matrix):
         return matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0]
 
     # Recursive case
-    det = 0
+    det = Fraction(0)
     for col in range(size):
         # Minor matrix
         minor = [row[:col] + row[col+1:] for row in matrix[1:]]
@@ -121,7 +122,7 @@ welcome_label.pack(pady=10)
 # Subtitle
 subtitle_label = tk.Label(
     top_frame,
-    text="Applying Laplace Expansion",
+    text="Using Laplace Expansion",
     bg="#1abc9c",
     fg="black",
     font=("Arial", 20, "italic"),

@@ -1,8 +1,8 @@
 import tkinter as tk
 from tkinter import messagebox
-import numpy as np
+import sympy as sp
 
-# code:
+# Function to calculate determinant
 def calculate_determinant():
     try:
         # Read matrix dimensions
@@ -19,12 +19,12 @@ def calculate_determinant():
             row = []
             for j in range(cols):
                 value = entries[i][j].get()
-                row.append(float(value))
+                row.append(sp.Rational(value))  # Parse input as fraction
             matrix.append(row)
 
-        # Convert to numpy array and calculate determinant
-        np_matrix = np.array(matrix)
-        determinant = round(np.linalg.det(np_matrix), 2)
+        # Convert to sympy Matrix and calculate determinant
+        sympy_matrix = sp.Matrix(matrix)
+        determinant = sympy_matrix.det()
 
         # Display the result
         result_label.config(text=f"Determinant = {determinant}")
@@ -32,6 +32,7 @@ def calculate_determinant():
         messagebox.showerror("Error", f"Invalid input: {e}")
 
 
+# Function to create matrix inputs
 def create_matrix_inputs():
     # Clear any previous inputs
     for widget in matrix_frame.winfo_children():
@@ -40,11 +41,11 @@ def create_matrix_inputs():
     try:
         rows = int(row_entry.get())
         cols = int(col_entry.get())
-        # Ensure matrix dimensions do not exceed 10x10
+
+        # Ensure the matrix is square and size is reasonable
         if rows > 10 or cols > 10:
             messagebox.showerror("Error", "Maximum matrix size is 10x10!")
             return
-        ## make sure the matrix is square
         if rows != cols:
             messagebox.showerror("Error", "Matrix must be square!")
             return
@@ -68,9 +69,9 @@ def create_matrix_inputs():
     except ValueError:
         messagebox.showerror("Error", "Please enter valid numbers for rows and columns.")
 
-###############################################
+
+# Function to navigate between cells
 def navigate_to_cell(row, col):
-    # Ensure the target cell is within bounds
     if 0 <= row < len(entries) and 0 <= col < len(entries[0]):
         target_cell = entries[row][col]
         target_cell.focus_set()
@@ -80,11 +81,11 @@ def navigate_to_cell(row, col):
 root = tk.Tk()
 root.title("Determinant Calculator")
 
-# **Custom styles**
+# Custom styles
 root.configure(bg="#2c3e50")  # Dark gray-blue background
 root.geometry("900x700")  # Expanded window size
 
-# **Top frame for welcome message**
+# Top frame for welcome message
 top_frame = tk.Frame(root, bg="#1abc9c", height=80)  # Teal green background
 top_frame.pack(fill="x")
 
@@ -97,10 +98,9 @@ welcome_label = tk.Label(
 )
 welcome_label.pack(pady=10)
 
-# Subtitle
 subtitle_label = tk.Label(
     top_frame,
-    text="Using Linear Algebra Determinant Function in Numpy",
+    text="Using Numpy",
     bg="#1abc9c",
     fg="black",
     font=("Arial", 20, "italic"),

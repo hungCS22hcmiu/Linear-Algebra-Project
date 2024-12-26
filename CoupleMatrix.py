@@ -4,9 +4,6 @@ import numpy as np
 from fractions import Fraction
 
 
-"""this is coding for calculating some basic operations between 2 matrices"""
-
-
 def clear_result_frame():
     """Clear the result frame before displaying new results."""
     for widget in result_frame.winfo_children():
@@ -140,27 +137,19 @@ col_a_entry = tk.Entry(size_frame, width=5, font=("Arial", 16), justify="center"
 col_a_entry.grid(row=0, column=3, padx=5)
 
 # Inputs for Matrix B
-tk.Label(size_frame, text="Matrix B Rows:", bg="#2c3e50", fg="white", font=("Arial", 16, "bold")).grid(row=1, column=0, padx=5)
+tk.Label(size_frame, text="Matrix B Rows:", bg="#2c3e50", fg="white", font=("Arial", 16, "bold")).grid(row=3, column=0, padx=5)
 row_b_entry = tk.Entry(size_frame, width=5, font=("Arial", 16), justify="center")
-row_b_entry.grid(row=1, column=1, padx=5)
+row_b_entry.grid(row=3, column=1, padx=5)
 
-tk.Label(size_frame, text="Matrix B Columns:", bg="#2c3e50", fg="white", font=("Arial", 16, "bold")).grid(row=1, column=2, padx=5)
+tk.Label(size_frame, text="Matrix B Columns:", bg="#2c3e50", fg="white", font=("Arial", 16, "bold")).grid(row=3, column=2, padx=5)
 col_b_entry = tk.Entry(size_frame, width=5, font=("Arial", 16), justify="center")
-col_b_entry.grid(row=1, column=3, padx=5)
+col_b_entry.grid(row=3, column=3, padx=5)
 
-tk.Button(size_frame, text="Generate Matrices", command=create_matrix_inputs, bg="#16a085", font=("Arial", 14)).grid(row=2, column=0, columnspan=4, pady=10)
+tk.Button(size_frame, text="Generate Matrices", command=create_matrix_inputs, bg="#16a085", font=("Arial", 14)).grid(row=5, column=0, columnspan=4, pady=10)
 
-# Matrix input frame
-matrix_frame = tk.Frame(root, bg="#34495e")
-matrix_frame.pack(pady=20)
-
-# Result frame
-result_frame = tk.Frame(root, bg="#34495e", relief="solid", bd=2)
-result_frame.pack(pady=20, fill="x")
-
-# Buttons for operations
-button_frame = tk.Frame(root, bg="#2c3e50")
-button_frame.pack(pady=10)
+# Left frame for buttons
+button_frame = tk.Frame(root, bg="#34495e")
+button_frame.pack(side="left", padx=20, pady=10)
 
 operations = [
     ("A x B", lambda: calculate_operation("AxB")),
@@ -170,7 +159,15 @@ operations = [
 ]
 
 for text, command in operations:
-    tk.Button(button_frame, text=text, command=command, bg="#3498db", font=("Arial", 14), width=15).pack(side="left", padx=5)
+    tk.Button(button_frame, text=text, command=command, bg="#3498db", font=("Arial", 14), width=15).pack(pady=10)
+
+# Matrix input frame
+matrix_frame = tk.Frame(root, bg="#2c3e50")
+matrix_frame.pack(pady=20, side="left")
+
+# Result frame
+result_frame = tk.Frame(root, bg="#34495e", relief="solid", bd=2)
+result_frame.pack(pady=20, fill="both", expand=True, side="right")
 
 # Run the application
 root.mainloop()
