@@ -2,7 +2,6 @@ import tkinter as tk
 from tkinter import messagebox
 import sympy as sp
 
-
 # Function to parse input as float or fraction
 def parse_input(value):
     try:
@@ -458,8 +457,125 @@ def create_power_input_direct():
         power_entry.grid(row=rows + 1, column=1, padx=10, pady=10)
 
         # Button to calculate A^n
-        calculate_button = tk.Button(matrix_frame, text="Calculate A^n", command=calculate_matrix_power_direct, font=("Arial", 16), bg="#16a085", fg="red")
+        calculate_button = tk.Button(matrix_frame, text="Calculate A^n", command=calculate_matrix_power_direct, font=("Arial", 16), bg="#16a085", fg="blue")
         calculate_button.grid(row=rows + 1, column=2, padx=10, pady=10)
+
+    except ValueError:
+        messagebox.showerror("Error", "Please enter valid numbers for rows and columns.")
+
+# Function to calculate n^A
+def calculate_scalar_power_matrix():
+    try:
+        # Parse the input matrix
+        rows = int(row_entry.get())
+        cols = int(col_entry.get())
+
+        if rows != cols:
+            messagebox.showerror("Error", "n^A is only defined for square matrices!")
+            return
+
+        # Parse the matrix A
+        matrix = []
+        for i in range(rows):
+            row = []
+            for j in range(cols):
+                value = entries[i][j].get()
+                row.append(parse_input(value))
+            matrix.append(row)
+
+        sympy_matrix = sp.Matrix(matrix)
+
+        # Get the scalar n
+        scalar_choice = scalar_var.get()
+        if scalar_choice == "e":
+            n = sp.E
+        elif scalar_choice == "pi":
+            n = sp.pi
+        else:
+            try:
+                n = parse_input(scalar_choice)
+                if n <= 0:
+                    raise ValueError("The scalar n must be positive!")
+            except Exception as e:
+                messagebox.showerror("Error", f"Invalid scalar value: {e}")
+                return
+
+        # Calculate n^A using exp(A * ln(n))
+        result_matrix = sp.exp(sympy_matrix * sp.log(n))
+
+        # Evaluate the result numerically
+        result_matrix_numeric = result_matrix.evalf()
+
+        # Display the result
+        clear_result_frame()
+        tk.Label(result_frame, text=f"n^A (n={scalar_choice}):", font=("Arial", 16, "bold")).pack()
+
+        for i in range(result_matrix_numeric.rows):
+            row_text = "   ".join(map(str, result_matrix_numeric.row(i)))
+            tk.Label(result_frame, text=row_text, font=("Arial", 16)).pack()
+    except Exception as e:
+        messagebox.showerror("Error", f"Invalid input: {e}")
+
+
+# Function to create input fields for scalar n and matrix A
+def create_scalar_power_input():
+    for widget in matrix_frame.winfo_children():
+        widget.destroy()
+
+    try:
+        rows = int(row_entry.get())
+        cols = int(col_entry.get())
+
+        if rows != cols:
+            messagebox.showerror("Error", "n^A is only defined for square matrices!")
+            return
+
+        global entries, scalar_var
+        entries = []
+
+        tk.Label(matrix_frame, text="Input Matrix A", font=("Arial", 16, "bold"), bg="#2c3e50", fg="white").grid(row=0, column=0, columnspan=cols)
+
+        # Create input fields for matrix A
+        for i in range(rows):
+            row_entries = []
+            for j in range(cols):
+                entry = tk.Entry(matrix_frame, width=8, font=("Arial", 16), justify="center")
+                entry.grid(row=i + 1, column=j, padx=5, pady=5)
+                row_entries.append(entry)
+            entries.append(row_entries)
+
+        from tkinter import ttk
+
+        # Dropdown menu for scalar n using ttk.Combobox
+        tk.Label(matrix_frame, text="Scalar (n):", font=("Arial", 16, "bold"), bg="#2c3e50", fg="white").grid(
+            row=rows + 1, column=0, padx=10, pady=10)
+
+        scalar_var = tk.StringVar(value="Select")
+        scalar_combobox = ttk.Combobox(
+            matrix_frame, textvariable=scalar_var, font=("Arial", 16), state="readonly", width=15
+        )
+        scalar_combobox['values'] = ["e", "pi", "Custom"]
+        scalar_combobox.grid(row=rows + 1, column=1, padx=10, pady=10)
+
+        # Entry field for custom scalar value
+        scalar_entry = tk.Entry(matrix_frame, width=8, font=("Arial", 16), justify="center")
+        scalar_entry.grid(row=rows + 1, column=2, padx=10, pady=10)
+
+        # Update scalar_var based on dropdown or custom entry
+        def update_scalar_var(*args):
+            if scalar_var.get() == "Custom":
+                scalar_var.set(scalar_entry.get())
+            elif scalar_var.get() in ["e", "pi"]:
+                scalar_entry.delete(0, tk.END)
+
+        scalar_var.trace("w", update_scalar_var)
+
+        # Button to calculate n^A
+        calculate_button = tk.Button(
+            matrix_frame, text="Calculate n^A", command=calculate_scalar_power_matrix,
+            font=("Arial", 16), bg="#16a085", fg="blue"
+        )
+        calculate_button.grid(row=rows + 1, column=3, padx=10, pady=10)
 
     except ValueError:
         messagebox.showerror("Error", "Please enter valid numbers for rows and columns.")
@@ -468,7 +584,7 @@ def create_power_input_direct():
 # Main window
 root = tk.Tk()
 root.title("Matrix Operations with Sympy")
-root.geometry("900x700")
+root.geometry("900x900")
 root.configure(bg="#2c3e50")
 
 top_frame = tk.Frame(root, bg="#1abc9c", height=80)
@@ -505,6 +621,8 @@ tk.Button(button_frame, text="Calculate A^n", command=calculate_power_of_a, font
 tk.Button(button_frame, text="Eigenvalues & Vectors", command=calculate_eigenvalues_and_vectors, font=("Arial", 16), width=15).pack(pady=10)
 
 tk.Button(button_frame, text="A^n (Direct)", command=create_power_input_direct, font=("Arial", 16), width=15).pack(pady=10)
+
+tk.Button(button_frame, text="n^A", command=create_scalar_power_input, font=("Arial", 16), width=15).pack(pady=10)
 
 # Frame for matrix size inputs
 size_frame = tk.Frame(root, bg="#2c3e50")
