@@ -1,6 +1,9 @@
 import tkinter as tk
 from tkinter import messagebox
 import sympy as sp
+import  numpy as np
+from sympy import Matrix
+
 
 # Function to parse input as float or fraction
 def parse_input(value):
@@ -217,6 +220,7 @@ def diagonalize_matrix():
         # Perform diagonalization
         P, D = sympy_matrix.diagonalize()
         P_inv = P.inv()
+        P_T = P.transpose()
 
         # Display results
         clear_result_frame()
@@ -240,7 +244,11 @@ def diagonalize_matrix():
         for i in range(P_inv.rows):
             row_text = "   ".join(map(str, P_inv.row(i)))
             tk.Label(result_frame, text=row_text, font=("Arial", 14)).pack()
-
+        # Display P^T matrix
+        tk.Label(result_frame, text="Matrix P^T (Transpose of P):", font=("Arial", 14, "bold")).pack(pady=5)
+        for i in range(P_T.rows):
+            row_text = "   ".join(map(str, P_T.row(i)))
+            tk.Label(result_frame, text=row_text, font=("Arial", 14)).pack()
     except Exception as e:
         messagebox.showerror("Error", f"Invalid input: {e}")
 # Function to calculate power of A using P and D
@@ -580,6 +588,100 @@ def create_scalar_power_input():
     except ValueError:
         messagebox.showerror("Error", "Please enter valid numbers for rows and columns.")
 
+def orthogonal_diagonalize_matrix():
+    """Sets up the UI for inputting a square matrix for orthogonal diagonalization."""
+    for widget in matrix_frame.winfo_children():
+        widget.destroy()
+
+    try:
+        rows = int(row_entry.get())
+        cols = int(col_entry.get())
+
+        if rows != cols:
+            messagebox.showerror("Error", "Matrix must be square to orthogonally diagonalize!")
+            return
+
+        global entries
+        entries = []
+
+        tk.Label(matrix_frame, text="Input Symmetric Matrix A", font=("Arial", 16, "bold"), bg="#2c3e50", fg="white").grid(
+            row=0, column=0, columnspan=cols
+        )
+
+        # Create input fields for matrix A
+        for i in range(rows):
+            row_entries = []
+            for j in range(cols):
+                entry = tk.Entry(matrix_frame, width=8, font=("Arial", 16), justify="center")
+                entry.grid(row=i + 1, column=j, padx=5, pady=5)
+                row_entries.append(entry)
+            entries.append(row_entries)
+
+        # Button to calculate orthogonal diagonalization
+        calculate_button = tk.Button(
+            matrix_frame,
+            text="Diagonalize",
+            command=calculate_orthogonal_diagonalization,
+            font=("Arial", 16),
+            bg="#16a085",
+            fg="blue",
+        )
+        calculate_button.grid(row=rows + 1, column=0, columnspan=cols, pady=10)
+
+    except ValueError:
+        messagebox.showerror("Error", "Please enter valid numbers for rows and columns.")
+
+
+def calculate_orthogonal_diagonalization():
+    """Performs orthogonal diagonalization and displays the results."""
+    try:
+        # Read input matrix A
+        matrix_a = []
+        for row_entries in entries:
+            row = [float(entry.get()) for entry in row_entries]
+            matrix_a.append(row)
+
+        matrix_a = Matrix(matrix_a)  # Convert to sympy Matrix
+
+        if not matrix_a.is_symmetric():
+            messagebox.showerror("Error", "Matrix must be symmetric to orthogonally diagonalize!")
+            return
+
+        # Perform diagonalization
+        P, D = matrix_a.diagonalize(normalize=True)
+
+        # Round values to 4 decimal places
+        D = D.applyfunc(lambda x: round(x, 4))
+        P = P.applyfunc(lambda x: round(x, 4))
+        P_T = P.T.applyfunc(lambda x: round(x, 4))
+
+        # Clear previous results
+        for widget in result_frame.winfo_children():
+            widget.destroy()
+
+        # Display results
+        tk.Label(result_frame, text="Matrix A:", font=("Arial", 16, "bold"), bg="#34495e", fg="white").pack(
+            anchor="w", pady=5
+        )
+        tk.Label(result_frame, text=matrix_a, font=("Courier", 14), bg="#34495e", fg="white").pack(anchor="w")
+
+        tk.Label(result_frame, text="Orthogonal Matrix P:", font=("Arial", 16, "bold"), bg="#34495e", fg="white").pack(
+            anchor="w", pady=5
+        )
+        tk.Label(result_frame, text=P, font=("Courier", 14), bg="#34495e", fg="white").pack(anchor="w")
+
+        tk.Label(result_frame, text="Diagonal Matrix D:", font=("Arial", 16, "bold"), bg="#34495e", fg="white").pack(
+            anchor="w", pady=5
+        )
+        tk.Label(result_frame, text=D, font=("Courier", 14), bg="#34495e", fg="white").pack(anchor="w")
+
+        tk.Label(result_frame, text="Transpose of P (P^T):", font=("Arial", 16, "bold"), bg="#34495e", fg="white").pack(
+            anchor="w", pady=5
+        )
+        tk.Label(result_frame, text=P_T, font=("Courier", 14), bg="#34495e", fg="white").pack(anchor="w")
+
+    except ValueError:
+        messagebox.showerror("Error", "Please enter valid numeric values!")
 
 # Main window
 root = tk.Tk()
@@ -587,6 +689,7 @@ root.title("Matrix Operations with Sympy")
 root.geometry("900x900")
 root.configure(bg="#2c3e50")
 
+# Add a top frame for the welcome label
 top_frame = tk.Frame(root, bg="#1abc9c", height=80)
 top_frame.pack(fill="x")
 
@@ -604,35 +707,51 @@ button_frame = tk.Frame(root, bg="#2c3e50")
 button_frame.pack(side="left", fill="y", padx=10, pady=10)
 
 tk.Button(button_frame, text="Determinant", command=calculate_determinant, font=("Arial", 16), width=15).pack(pady=10)
-
 tk.Button(button_frame, text="RREF", command=calculate_rref, font=("Arial", 16), width=15).pack(pady=10)
-
 tk.Button(button_frame, text="Inverse", command=calculate_inverse, font=("Arial", 16), width=15).pack(pady=10)
-
 tk.Button(button_frame, text="Transpose", command=calculate_transpose, font=("Arial", 16), width=15).pack(pady=10)
-
 tk.Button(button_frame, text="Eigenvalues", command=calculate_eigenvalues, font=("Arial", 16), width=15).pack(pady=10)
-
 tk.Button(button_frame, text="Diagonalize", command=diagonalize_matrix, font=("Arial", 16), width=15).pack(pady=10)
-
 tk.Button(button_frame, text="A^n (from P, D)", command=create_power_matrix_inputs, font=("Arial", 16), width=15).pack(pady=10)
 tk.Button(button_frame, text="Calculate A^n", command=calculate_power_of_a, font=("Arial", 16), width=15).pack(pady=10)
-
 tk.Button(button_frame, text="Eigenvalues & Vectors", command=calculate_eigenvalues_and_vectors, font=("Arial", 16), width=15).pack(pady=10)
-
 tk.Button(button_frame, text="A^n (Direct)", command=create_power_input_direct, font=("Arial", 16), width=15).pack(pady=10)
-
 tk.Button(button_frame, text="n^A", command=create_scalar_power_input, font=("Arial", 16), width=15).pack(pady=10)
+tk.Button(button_frame, text="D, P, P^T (A=PDP^T)", command=orthogonal_diagonalize_matrix, font=("Arial", 16), width=15).pack(pady=10)
+
+# Create a canvas for the scrollable area
+canvas = tk.Canvas(root, bg="#34495e")
+canvas.pack(side="right", fill="both", expand=True)
+
+# Add scrollbars
+x_scrollbar = tk.Scrollbar(root, orient="horizontal", command=canvas.xview)
+x_scrollbar.pack(side="bottom", fill="x")
+
+y_scrollbar = tk.Scrollbar(root, orient="vertical", command=canvas.yview)
+y_scrollbar.pack(side="right", fill="y")
+
+canvas.configure(xscrollcommand=x_scrollbar.set, yscrollcommand=y_scrollbar.set)
+
+# Create a frame inside the canvas for content
+scrollable_frame = tk.Frame(canvas, bg="#34495e")
+
+# Bind the frame to the canvas
+scrollable_frame_id = canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+
+def configure_canvas(event):
+    canvas.configure(scrollregion=canvas.bbox("all"))
+
+scrollable_frame.bind("<Configure>", configure_canvas)
 
 # Frame for matrix size inputs
-size_frame = tk.Frame(root, bg="#2c3e50")
+size_frame = tk.Frame(scrollable_frame, bg="#34495e")
 size_frame.pack(pady=20)
 
-tk.Label(size_frame, text="ROWS", bg="#2c3e50", fg="white", font=("Arial", 16, "bold")).grid(row=0, column=0, padx=10)
+tk.Label(size_frame, text="ROWS", bg="#34495e", fg="white", font=("Arial", 16, "bold")).grid(row=0, column=0, padx=10)
 row_entry = tk.Entry(size_frame, width=8, font=("Arial", 16), justify="center")
 row_entry.grid(row=0, column=1, padx=10)
 
-tk.Label(size_frame, text="COLUMNS", bg="#2c3e50", fg="white", font=("Arial", 16, "bold")).grid(row=0, column=2, padx=10)
+tk.Label(size_frame, text="COLUMNS", bg="#34495e", fg="white", font=("Arial", 16, "bold")).grid(row=0, column=2, padx=10)
 col_entry = tk.Entry(size_frame, width=8, font=("Arial", 16), justify="center")
 col_entry.grid(row=0, column=3, padx=10)
 
@@ -649,11 +768,11 @@ generate_button = tk.Button(
 generate_button.grid(row=0, column=4, padx=20)
 
 # Frame for matrix input
-matrix_frame = tk.Frame(root, bg="#34495e")
+matrix_frame = tk.Frame(scrollable_frame, bg="#34495e")
 matrix_frame.pack(pady=20)
 
 # Frame for results
-result_frame = tk.Frame(root, bg="#34495e")
+result_frame = tk.Frame(scrollable_frame, bg="#34495e")
 result_frame.pack(pady=20)
 
 root.mainloop()
